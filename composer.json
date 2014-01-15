@@ -1,0 +1,23 @@
+{
+    "name": "rncryptor/rncryptor-php",
+    "description": "PHP implementation of RNCryptor",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rob Napier",
+            "email": "robnapier@gmail.com"
+        },
+        {
+            "name": "Curtis Farnham",
+            "email": "curtisdf@gmail.com"
+        }
+    ],
+    "require": {
+        "ext-mcrypt": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "RNCryptor\\": ""
+        }
+    }
+}
