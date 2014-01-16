@@ -7,7 +7,8 @@ class VectorBase extends \PHPUnit_Framework_TestCase {
 	 * Base directory for the test vector files,
 	 * relative to __DIR__
 	 */
-	const VECTOR_DIR = '/../../vendor/rncryptor/rncryptor-spec/vectors/CURRENT';
+	const PARALLEL_VECTOR_DIR = '/../../../spec/vectors/CURRENT';
+	const SUBPACKAGE_VECTOR_DIR = '/../../vendor/rncryptor/spec/vectors/CURRENT';
 
 	public function testKdfVectors() {
 
@@ -88,9 +89,12 @@ class VectorBase extends \PHPUnit_Framework_TestCase {
 
 	private function _getVectors($filename) {
 
-		$absolutePath = __DIR__ . '/' . self::VECTOR_DIR . '/' . $filename;
+		$absolutePath = __DIR__ . '/' . self::PARALLEL_VECTOR_DIR . '/' . $filename;
 		if (!file_exists($absolutePath)) {
-			throw new \Exception('No such file: ' . $absolutePath);
+			$absolutePath = __DIR__ . '/' . self::SUBPACKAGE_VECTOR_DIR . '/' . $filename;
+			if (!file_exists($absolutePath)) {
+				throw new \Exception('No such file: ' . $absolutePath);
+			}
 		}
 
 		$index = -1;
