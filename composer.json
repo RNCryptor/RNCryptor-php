@@ -3,7 +3,7 @@
     "type": "library",
     "description": "PHP implementation of RNCryptor",
     "keywords": ["encryption", "crypto", "rncryptor"],
-    "homepage": "https://github.com/RNCryptor/RNCryptor-php",
+    "homepage": "http://rncryptor.github.io",
     "license": "MIT",
     "authors": [
         {
