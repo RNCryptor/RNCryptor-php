@@ -1,17 +1,20 @@
 <?php
-error_reporting(E_ALL | E_STRICT);
 
-if (!function_exists('hex2bin')) {
+/*
+ * This file is part of the RNCryptor package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-	/**
-	 * If the PHP version being used is earlier than 5.4.0, we need to
-	 * make up for the lack of a hex2bin() function.
-	 */
-	function hex2bin($data) {
-		$bin = '';
-		foreach (str_split($data, 2) as $pair) {
-			$bin .= chr(hexdec($pair));
-		}
-		return $bin;
-	}
+if (file_exists(__DIR__.'/../autoload.php')) {
+    require __DIR__.'/../autoload.php';
+
+} else if (@include('RNCryptor/Autoloader.php')) {
+    RNCryptor\Autoloader::register();
+
+} else {
+    die('ERROR: Unable to find a suitable mean to register RNCryptor\Autoloader.');
 }
+
+require_once __DIR__ . '/functions.php';

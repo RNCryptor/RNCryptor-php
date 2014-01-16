@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/RNCryptor.php';
+namespace RNCryptor;
 
 /**
  * RNDecryptor for PHP
@@ -7,7 +7,7 @@ require_once __DIR__ . '/RNCryptor.php';
  * Decrypt data interchangeably with Rob Napier's Objective-C implementation
  * of RNCryptor
  */
-class RNDecryptor extends RNCryptor {
+class Decryptor extends Cryptor {
 
 	/**
 	 * Decrypt RNCryptor-encrypted data
@@ -45,7 +45,7 @@ class RNDecryptor extends RNCryptor {
 
 		$binaryData = base64_decode($encryptedBase64Data);
 
-		$components = new stdClass();
+		$components = new \stdClass();
 		$components->headers = $this->_parseHeaders($binaryData);
 
 		$components->hmac = substr($binaryData, - $this->_settings->hmac->length);

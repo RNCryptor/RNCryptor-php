@@ -1,6 +1,5 @@
 <?php
-
-require_once __DIR__ . '/RNCryptor.php';
+namespace RNCryptor;
 
 /**
  * RNEncryptor for PHP
@@ -8,7 +7,7 @@ require_once __DIR__ . '/RNCryptor.php';
  * Encrypt data interchangeably with Rob Napier's Objective-C implementation
  * of RNCryptor
  */
-class RNEncryptor extends RNCryptor {
+class Encryptor extends Cryptor {
 
 	/**
 	 * Encrypt plaintext using RNCryptor's algorithm
@@ -16,10 +15,10 @@ class RNEncryptor extends RNCryptor {
 	 * @param string $plaintext Text to be encrypted
 	 * @param string $password Password to use
 	 * @param int $version (Optional) RNCryptor schema version to use.
-	 * @throws Exception If the provided version (if any) is unsupported
+	 * @throws \Exception If the provided version (if any) is unsupported
 	 * @return string Encrypted, Base64-encoded string
 	 */
-	public function encrypt($plaintext, $password, $version = RNCryptor::DEFAULT_SCHEMA_VERSION) {
+	public function encrypt($plaintext, $password, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
 
 		$this->_configureSettings($version);
 
@@ -34,7 +33,7 @@ class RNEncryptor extends RNCryptor {
 		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
 	}
 
-	public function encryptWithArbitrarySalts($plaintext, $password, $encSalt, $hmacSalt, $iv, $version = RNCryptor::DEFAULT_SCHEMA_VERSION) {
+	public function encryptWithArbitrarySalts($plaintext, $password, $encSalt, $hmacSalt, $iv, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
 	
 		$this->_configureSettings($version);
 
@@ -49,7 +48,7 @@ class RNEncryptor extends RNCryptor {
 		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
 	}
 
-	public function encryptWithArbitraryKeys($plaintext, $encKey, $hmacKey, $iv, $version = RNCryptor::DEFAULT_SCHEMA_VERSION) {
+	public function encryptWithArbitraryKeys($plaintext, $encKey, $hmacKey, $iv, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
 
 		$this->_configureSettings($version);
 
@@ -63,15 +62,15 @@ class RNEncryptor extends RNCryptor {
 
 	private function _generateInitializedComponents($version) {
 
-		$components = new stdClass();
-		$components->headers = new stdClass();
+		$components = new \stdClass();
+		$components->headers = new \stdClass();
 		$components->headers->version = chr($version);
 		$components->headers->options = chr($this->_settings->options);
 
 		return $components;
 	}
 
-	private function _encrypt($plaintext, stdClass $components, $encKey, $hmacKey) {
+	private function _encrypt($plaintext, \stdClass $components, $encKey, $hmacKey) {
 	
 		switch ($this->_settings->mode) {
 			case 'ctr':

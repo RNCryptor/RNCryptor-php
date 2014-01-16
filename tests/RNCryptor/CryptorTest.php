@@ -1,9 +1,7 @@
 <?php
+namespace RNCryptor;
 
-require_once __DIR__ . '/../../RNDecryptor.php';
-require_once __DIR__ . '/../../RNEncryptor.php';
-
-class RNCryptorTest extends PHPUnit_Framework_TestCase {
+class CryptorTest extends \PHPUnit_Framework_TestCase {
 
 	// relative to __DIR__
 	const TEXT_FILENAME = 'lorem-ipsum.txt';
@@ -19,46 +17,46 @@ class RNCryptorTest extends PHPUnit_Framework_TestCase {
     }
 
   	public function testCanDecryptSelfEncryptedDefaultVersion() {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD);
   		
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
 
   	public function testCanDecryptSelfEncryptedStringEqualToBlockSizeMultiple() {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT_V2_BLOCKSIZE, self::SAMPLE_PASSWORD);
   	
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT_V2_BLOCKSIZE, $decrypted);
   	}
 
   	public function testCanDecryptSelfEncryptedVersion0() {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD, 0);
   		
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
 
   	public function testCanDecryptSelfEncryptedVersion1() {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD, 1);
   		
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
   	
   	public function testCanDecryptSelfEncryptedVersion2() {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD, 2);
   	
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
@@ -67,61 +65,61 @@ class RNCryptorTest extends PHPUnit_Framework_TestCase {
 
   		$text = file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt');
   	
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt($text, self::SAMPLE_PASSWORD);
   	
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   		$this->assertEquals($text, $decrypted);
   	}
 
   	public function testVersion1TruncatesMultibytePasswords() {
   		$password1 = '中文密码';
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, $password1, 1);
 
   		// Yikes, it's truncated! So with an all-multibyte password
   		// like above, we can replace the last half of the string
   		// with whatver we want, and decryption will still work.
   		$password2 = '中文中文';
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password2);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password1);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
 
   	public function testVersion2TruncatesMultibytePasswords() {
   		$password1 = '中文密码';
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, $password1, 2);
 
   		// Yikes, it's truncated! So with an all-multibyte password
   		// like above, we can replace the last half of the string
   		// with whatver we want, and decryption will still work.
   		$password2 = '中文中文';
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password2);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
 
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password1);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
 
   	public function testVersion3AcceptsMultibytePasswords() {
   		$password1 = '中文密码';
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$encrypted = $encryptor->encrypt(self::SAMPLE_PLAINTEXT, $password1, 3);
 
   		$password2 = '中文中文';
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password2);
   		$this->assertFalse($decrypted);
 
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt($encrypted, $password1);
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
@@ -129,13 +127,13 @@ class RNCryptorTest extends PHPUnit_Framework_TestCase {
   	public function testCannotUseWithUnsupportedSchemaVersions() {
   		$fakeSchemaNumber = 57;
   		$encrypted = $this->_generateEncryptedStringWithUnsupportedSchemaNumber($fakeSchemaNumber);
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$this->setExpectedException('Exception');
   		$decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   	}
 
   	private function _generateEncryptedStringWithUnsupportedSchemaNumber($fakeSchemaNumber) {
-  		$encryptor = new RNEncryptor();
+  		$encryptor = new Encryptor();
   		$plaintext = 'The price of ice is nice for mice';
   		$encrypted = $encryptor->encrypt($plaintext, self::SAMPLE_PASSWORD);
 
@@ -144,8 +142,3 @@ class RNCryptorTest extends PHPUnit_Framework_TestCase {
   		return base64_encode($encryptedBinary);
   	}
 }
-
-if (!defined('PHPUnit_MAIN_METHOD') || PHPUnit_MAIN_METHOD == 'RNCryptorTest::main') {
-	RNCryptorTest::main();
-}
-

@@ -1,8 +1,7 @@
 <?php
+namespace RNCryptor;
 
-require_once __DIR__ . '/../../RNDecryptor.php';
-
-class RNDecryptorTest extends PHPUnit_Framework_TestCase {
+class DecryptorTest extends \PHPUnit_Framework_TestCase {
 
 	const IOS_PASSWORD = 'mypassword123$!';
 
@@ -30,86 +29,76 @@ class RNDecryptorTest extends PHPUnit_Framework_TestCase {
 	const PLAINTEXT_V2_NON_BLOCK_INTERVAL = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do...';
 	const IOS_ENCRYPTED_V2_NON_BLOCK_INTERVAL = 'AgG8X+ixN6HN9zFnuK1NMJAPntIuC0+WPsmFhGL314zLuq1T9xWDHYzpnzW8EqDz81Amj36+EqrjazQ1gO9ao6bpMwUKdT2xY4ZUrhtCQm3LD2okbEIGjj5dtMJtB3i759WdnmNf8K0ULDWNzNQHPzdNDcEE2BPh+2kRaqVzWyBOzJppJoD5n+WdglS7BEBU+4U=';
 
-	public static function main() {
-		$suite  = new PHPUnit_Framework_TestSuite(get_called_class());
-		$result = PHPUnit_TextUI_TestRunner::run($suite);
-	}
-
   	public function testCanDecryptIosEncryptedVersion0WithPlaintextLengthLessThanOneBlock() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V0_LESS_THAN_ONE_BLOCK, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V0_LESS_THAN_ONE_BLOCK, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion0WithPlaintextReallyLong() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema0.txt'), self::IOS_PASSWORD);
   		$this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion0WithPlaintextLengthExactlyOneBlock() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V0_EXACTLY_ONE_BLOCK, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V0_EXACTLY_ONE_BLOCK, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion0WithPlaintextLengthExactlyTwoBlocks() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V0_EXACTLY_TWO_BLOCKS, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V0_EXACTLY_TWO_BLOCKS, $decrypted);
   	}
   	
   	public function testCanDecryptIosEncryptedVersion0WithPlaintextLengthNotOnBlockInterval() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V0_NON_BLOCK_INTERVAL, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V0_NON_BLOCK_INTERVAL, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion1WithPlaintextReallyLong() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema1.txt'), self::IOS_PASSWORD);
   		$this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion1WithPlaintextLengthExactlyOneBlock() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V1_EXACTLY_ONE_BLOCK, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V1_EXACTLY_ONE_BLOCK, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion1WithPlaintextLengthNotOnBlockInterval() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V1_NON_BLOCK_INTERVAL, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V1_NON_BLOCK_INTERVAL, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion2WithPlaintextReallyLong() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema2.txt'), self::IOS_PASSWORD);
   		$this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion2WithPlaintextLengthExactlyOneBlock() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V2_EXACTLY_ONE_BLOCK, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V2_EXACTLY_ONE_BLOCK, $decrypted);
   	}
 
   	public function testCanDecryptIosEncryptedVersion2WithPlaintextLengthNotOnBlockInterval() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V2_NON_BLOCK_INTERVAL, self::IOS_PASSWORD);
   		$this->assertEquals(self::PLAINTEXT_V2_NON_BLOCK_INTERVAL, $decrypted);
   	}
 
   	public function testDecryptingWithBadPasswordFails() {
-  		$decryptor = new RNDecryptor();
+  		$decryptor = new Decryptor();
   		$decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V2_NON_BLOCK_INTERVAL, 'bad-password');
   		$this->assertEquals(false, $decrypted);
   	}
   	
 }
-
-if (!defined('PHPUnit_MAIN_METHOD') || PHPUnit_MAIN_METHOD == 'RNDecryptorTest::main') {
-	RNDecryptorTest::main();
-}
-

@@ -1,22 +1,20 @@
 <?php
+namespace RNCryptor;
 
-require_once __DIR__ . '/../../RNDecryptor.php';
-require_once __DIR__ . '/../../RNEncryptor.php';
-
-class VectorBase extends PHPUnit_Framework_TestCase {
+class VectorBase extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 * Base directory for the test vector files,
 	 * relative to __DIR__
 	 */
-	const VECTOR_DIR = '/../../../vectors';
+	const VECTOR_DIR = '/../../vendor/rncryptor/rncryptor-spec/vectors/CURRENT';
 
 	public function testKdfVectors() {
 
 		$vectors = $this->_getVectors('kdf');
 		foreach ($vectors as $vector) {
 	
-			$cryptor = new RNCryptor();
+			$cryptor = new Cryptor();
 			$key = $cryptor->generateKey(
 				$this->_prettyHexToBin($vector['salt_hex']),
 				$vector['password'],
@@ -35,7 +33,7 @@ class VectorBase extends PHPUnit_Framework_TestCase {
 		$vectors = $this->_getVectors('key');
 		foreach ($vectors as $vector) {
 	
-			$encryptor = new RNEncryptor();
+			$encryptor = new Encryptor();
 			$encryptedB64 = $encryptor->encryptWithArbitraryKeys(
 				$this->_prettyHexToBin($vector['plaintext_hex']),
 				$this->_prettyHexToBin($vector['enc_key_hex']),
@@ -56,7 +54,7 @@ class VectorBase extends PHPUnit_Framework_TestCase {
 		$vectors = $this->_getVectors('password');
 		foreach ($vectors as $vector) {
 
-			$encryptor = new RNEncryptor();
+			$encryptor = new Encryptor();
 			$encryptedB64 = $encryptor->encryptWithArbitrarySalts(
 				$this->_prettyHexToBin($vector['plaintext_hex']),
 				$vector['password'],
@@ -92,7 +90,7 @@ class VectorBase extends PHPUnit_Framework_TestCase {
 
 		$absolutePath = __DIR__ . '/' . self::VECTOR_DIR . '/' . $filename;
 		if (!file_exists($absolutePath)) {
-			throw new Exception('No such file: ' . $absolutePath);
+			throw new \Exception('No such file: ' . $absolutePath);
 		}
 
 		$index = -1;

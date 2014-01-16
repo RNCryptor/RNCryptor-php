@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/functions.php';
+namespace RNCryptor;
 
-class RNCryptor {
+class Cryptor {
 
 	const DEFAULT_SCHEMA_VERSION = 3;
 
@@ -9,24 +9,24 @@ class RNCryptor {
 
 	public function __construct() {
 		if (!extension_loaded('mcrypt')) {
-			throw new Exception('The mcrypt extension is missing.');
+			throw new \Exception('The mcrypt extension is missing.');
 		}
 	}
 
 	protected function _configureSettings($version) {
 
-		$settings = new stdClass();
+		$settings = new \stdClass();
 
 		$settings->algorithm = MCRYPT_RIJNDAEL_128;
 		$settings->saltLength = 8;
 		$settings->ivLength = 16;
 
-		$settings->pbkdf2 = new stdClass();
+		$settings->pbkdf2 = new \stdClass();
 		$settings->pbkdf2->prf = 'sha1';
 		$settings->pbkdf2->iterations = 10000;
 		$settings->pbkdf2->keyLength = 32;
 		
-		$settings->hmac = new stdClass();
+		$settings->hmac = new \stdClass();
 		$settings->hmac->length = 32;
 
 		switch ($version) {
@@ -67,12 +67,12 @@ class RNCryptor {
 				break;
 
 			default:
-				throw new Exception('Unsupported schema version ' . $version);
+				throw new \Exception('Unsupported schema version ' . $version);
 		}
-		
+
 		$this->_settings = $settings;
 	}
-	
+
 	/**
 	 * Encrypt or decrypt using AES CTR Little Endian mode
 	 */
@@ -92,7 +92,7 @@ class RNCryptor {
 		return $payload ^ mcrypt_encrypt($this->_settings->algorithm, $key, $counter, 'ecb');
 	}
 
-	protected function _generateHmac(stdClass $components, $hmacKey) {
+	protected function _generateHmac(\stdClass $components, $hmacKey) {
 	
 		$hmacMessage = '';
 		if ($this->_settings->hmac->includesHeader) {
