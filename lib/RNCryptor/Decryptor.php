@@ -96,7 +96,7 @@ class Decryptor extends Cryptor {
 
 	private function _hmacIsValid($components, $password) {
 		$hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
-		return ($components->hmac == $this->_generateHmac($components, $hmacKey));
+		return \hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
 	}
 
 }
