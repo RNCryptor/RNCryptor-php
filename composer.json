@@ -21,6 +21,7 @@
     ],
     "require": {
         "php": ">=5.3.0",
+        "sarciszewski/php-future": "^0.4",
         "ext-mcrypt": "*"
     },
     "require-dev": {
