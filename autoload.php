@@ -10,5 +10,3 @@
 require __DIR__.'/lib/RNCryptor/Autoloader.php';
 
 RNCryptor\Autoloader::register();
-
-require_once __DIR__ . '/functions.php';

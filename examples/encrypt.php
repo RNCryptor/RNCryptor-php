@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__.'/../autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 $password = "myPassword";
 $plaintext = "Here is my test vector. It's not too long, but more than a block and needs padding.";
