@@ -123,6 +123,16 @@ class Cryptor {
 		return $this->_generateKey($salt, $password);
 	}
 
+	public function generateKeyWithoutSalt($password, $version = self::DEFAULT_SCHEMA_VERSION) {
+		$this->_configureSettings($version);
+		$salt = $this->_generateSalt();
+		return $this->_generateKey($salt, $password);
+	}
+
+	private function _generateSalt() {
+		return $this->_generateIv($this->_settings->saltLength);
+	}
+
 	protected function _generateKey($salt, $password) {
 
 		if ($this->_settings->truncatesMultibytePasswords) {
@@ -131,6 +141,15 @@ class Cryptor {
 		}
 
 		return hash_pbkdf2($this->_settings->pbkdf2->prf, $password, $salt, $this->_settings->pbkdf2->iterations, $this->_settings->pbkdf2->keyLength, true);
+	}
+
+	private function _generateIv($blockSize) {
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			$randomSource = MCRYPT_RAND;
+		} else {
+			$randomSource = MCRYPT_DEV_URANDOM;
+		}
+		return mcrypt_create_iv($blockSize, $randomSource);
 	}
 
 }
