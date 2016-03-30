@@ -27,6 +27,7 @@ class Decryptor extends Cryptor {
 
 		$key = $this->_generateKey($components->headers->encSalt, $password);
 
+		$plaintext = null;
 		switch ($this->_settings->mode) {
 			case 'ctr':
 				$plaintext = $this->_aesCtrLittleEndianCrypt($components->ciphertext, $key, $components->headers->iv);
@@ -34,6 +35,28 @@ class Decryptor extends Cryptor {
 
 			case 'cbc':
 				$paddedPlaintext = mcrypt_decrypt($this->_settings->algorithm, $key, $components->ciphertext, 'cbc', $components->headers->iv);
+				$plaintext = $this->_stripPKCS7Padding($paddedPlaintext);
+				break;
+		}
+
+		return $plaintext;
+	}
+
+	public function decryptWithArbitraryKeys($encryptedBase64Data, $encKey, $hmacKey) {
+		$components = $this->_unpackEncryptedBase64Data($encryptedBase64Data);
+
+		if (!$this->_hmacKeyIsValid($components, $hmacKey)) {
+			return false;
+		}
+
+		$plaintext = null;
+		switch ($this->_settings->mode) {
+			case 'ctr':
+				$plaintext = $this->_aesCtrLittleEndianCrypt($components->ciphertext, $encKey, $components->headers->iv);
+				break;
+
+			case 'cbc':
+				$paddedPlaintext = mcrypt_decrypt($this->_settings->algorithm, $encKey, $components->ciphertext, 'cbc', $components->headers->iv);
 				$plaintext = $this->_stripPKCS7Padding($paddedPlaintext);
 				break;
 		}
@@ -96,6 +119,10 @@ class Decryptor extends Cryptor {
 
 	private function _hmacIsValid($components, $password) {
 		$hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
+		return hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
+	}
+
+	private function _hmacKeyIsValid($components, $hmacKey) {
 		return hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
 	}
 
