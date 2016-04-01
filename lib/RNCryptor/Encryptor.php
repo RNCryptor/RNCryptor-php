@@ -48,14 +48,14 @@ class Encryptor extends Cryptor {
 		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
 	}
 
-	public function encryptWithArbitraryKeys($plaintext, $encKey, $hmacKey, $iv, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
+	public function encryptWithArbitraryKeys($plaintext, $encKey, $hmacKey, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
 
 		$this->_configureSettings($version);
 
 		$this->_settings->options = 0;
 
 		$components = $this->_generateInitializedComponents($version);
-		$components->headers->iv = $iv;
+		$components->headers->iv = $this->_generateIv($this->_settings->ivLength);;
 
 		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
 	}
