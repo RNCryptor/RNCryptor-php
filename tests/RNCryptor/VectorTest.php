@@ -39,7 +39,6 @@ class VectorBase extends \PHPUnit_Framework_TestCase {
 				$this->_prettyHexToBin($vector['plaintext_hex']),
 				$this->_prettyHexToBin($vector['enc_key_hex']),
 				$this->_prettyHexToBin($vector['hmac_key_hex']),
-				$this->_prettyHexToBin($vector['iv_hex']),
 				$vector['version']
 			);
 	
