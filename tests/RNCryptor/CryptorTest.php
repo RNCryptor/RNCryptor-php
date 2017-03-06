@@ -138,7 +138,7 @@ class CryptorTest extends \PHPUnit_Framework_TestCase {
   		$encrypted = $encryptor->encrypt($plaintext, self::SAMPLE_PASSWORD);
 
   		$encryptedBinary = base64_decode($encrypted);
-  		$encryptedBinary = chr($fakeSchemaNumber) . substr($encryptedBinary, 1, strlen($encryptedBinary - 1));
+        $encryptedBinary = chr($fakeSchemaNumber) . substr($encryptedBinary, 1);
   		return base64_encode($encryptedBinary);
   	}
 }
