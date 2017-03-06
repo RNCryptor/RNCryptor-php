@@ -73,7 +73,7 @@ class CryptorTest extends TestCase
 
     public function testCanDecryptLongText()
     {
-        $text = file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt');
+        $text = file_get_contents(__DIR__ . '/../files/lorem-ipsum.txt');
     
         $encryptor = new Encryptor;
         $encrypted = $encryptor->encrypt($text, self::SAMPLE_PASSWORD);

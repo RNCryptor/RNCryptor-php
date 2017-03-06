@@ -59,10 +59,10 @@ class DecryptorTest extends TestCase
     {
         $decryptor = new Decryptor;
         $decrypted = $decryptor->decrypt(
-            file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema0.txt'),
+            file_get_contents(__DIR__ . '/../files/lorem-ipsum-encrypted-base64-schema0.txt'),
             self::IOS_PASSWORD
         );
-        $this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
+        $this->assertEquals(file_get_contents(__DIR__ . '/../files/lorem-ipsum.txt'), $decrypted);
     }
 
     public function testCanDecryptIosEncryptedVersion0WithPlaintextLengthExactlyOneBlock()
@@ -90,10 +90,10 @@ class DecryptorTest extends TestCase
     {
         $decryptor = new Decryptor;
         $decrypted = $decryptor->decrypt(
-            file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema1.txt'),
+            file_get_contents(__DIR__ . '/../files/lorem-ipsum-encrypted-base64-schema1.txt'),
             self::IOS_PASSWORD
         );
-        $this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
+        $this->assertEquals(file_get_contents(__DIR__ . '/../files/lorem-ipsum.txt'), $decrypted);
     }
 
     public function testCanDecryptIosEncryptedVersion1WithPlaintextLengthExactlyOneBlock()
@@ -114,10 +114,10 @@ class DecryptorTest extends TestCase
     {
         $decryptor = new Decryptor;
         $decrypted = $decryptor->decrypt(
-            file_get_contents(__DIR__ . '/_files/lorem-ipsum-encrypted-base64-schema2.txt'),
+            file_get_contents(__DIR__ . '/../files/lorem-ipsum-encrypted-base64-schema2.txt'),
             self::IOS_PASSWORD
         );
-        $this->assertEquals(file_get_contents(__DIR__ . '/_files/lorem-ipsum.txt'), $decrypted);
+        $this->assertEquals(file_get_contents(__DIR__ . '/../files/lorem-ipsum.txt'), $decrypted);
     }
 
     public function testCanDecryptIosEncryptedVersion2WithPlaintextLengthExactlyOneBlock()
