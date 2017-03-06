@@ -1,7 +1,9 @@
 <?php
 namespace RNCryptor;
 
-class DecryptorTest extends \PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+class DecryptorTest extends TestCase {
 
 	const IOS_PASSWORD = 'mypassword123$!';
 

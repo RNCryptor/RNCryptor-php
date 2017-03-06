@@ -1,7 +1,9 @@
 <?php
 namespace RNCryptor;
 
-class CryptorTest extends \PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+class CryptorTest extends TestCase {
 
 	// relative to __DIR__
 	const TEXT_FILENAME = 'lorem-ipsum.txt';
@@ -124,11 +126,13 @@ class CryptorTest extends \PHPUnit_Framework_TestCase {
   		$this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
   	}
 
+    /**
+     * @expectedException \Exception
+     */
   	public function testCannotUseWithUnsupportedSchemaVersions() {
   		$fakeSchemaNumber = 57;
   		$encrypted = $this->_generateEncryptedStringWithUnsupportedSchemaNumber($fakeSchemaNumber);
   		$decryptor = new Decryptor();
-  		$this->setExpectedException('Exception');
   		$decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
   	}
 

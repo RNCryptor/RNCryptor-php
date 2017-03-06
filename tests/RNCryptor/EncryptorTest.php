@@ -1,7 +1,9 @@
 <?php
 namespace RNCryptor;
 
-class EncryptorTest extends \PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+class EncryptorTest extends TestCase {
 
 	const SAMPLE_PLAINTEXT = 'Hello, how are you today?  I am doing fine.';
 	const SAMPLE_PASSWORD = 'keep-out-123';

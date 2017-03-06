@@ -1,7 +1,9 @@
 <?php
 namespace RNCryptor;
 
-class VectorBase extends \PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+class VectorBase extends TestCase {
 
 	/**
 	 * Base directory for the test vector files,
