@@ -78,8 +78,7 @@ class Encryptor extends Cryptor {
 				break;
 	
 			case 'cbc':
-				$paddedPlaintext = $this->_addPKCS7Padding($plaintext, strlen($components->headers->iv));
-				$components->ciphertext = mcrypt_encrypt($this->_settings->algorithm, $encKey, $paddedPlaintext, 'cbc', $components->headers->iv);
+                $components->ciphertext = $this->_encrypt_internal($encKey, $plaintext, 'cbc', $components->headers->iv);
 				break;
 		}
 
@@ -106,11 +105,6 @@ class Encryptor extends Cryptor {
 	}
 
 	private function _generateIv($blockSize) {
-		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-			$randomSource = MCRYPT_RAND;
-		} else {
-			$randomSource = MCRYPT_DEV_URANDOM;
-		}
-		return mcrypt_create_iv($blockSize, $randomSource);
+        return openssl_random_pseudo_bytes($blockSize);
 	}
 }

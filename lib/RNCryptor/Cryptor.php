@@ -8,8 +8,8 @@ class Cryptor {
 	protected $_settings;
 
 	public function __construct() {
-		if (!extension_loaded('mcrypt')) {
-			throw new \Exception('The mcrypt extension is missing.');
+		if (!extension_loaded('openssl')) {
+			throw new \Exception('RNCryptor requires the openssl extension.');
 		}
 	}
 
@@ -17,7 +17,7 @@ class Cryptor {
 
 		$settings = new \stdClass();
 
-		$settings->algorithm = MCRYPT_RIJNDAEL_128;
+		$settings->algorithm = 'aes-256-';
 		$settings->saltLength = 8;
 		$settings->ivLength = 16;
 
@@ -73,6 +73,22 @@ class Cryptor {
 		$this->_settings = $settings;
 	}
 
+    protected function _decrypt_internal($key, $payload, $mode, $iv = null) {
+
+        if ($iv == null) {
+            $iv = "";
+        }
+        return openssl_decrypt($payload, $this->_settings->algorithm.$mode, $key, OPENSSL_RAW_DATA, $iv);
+    }
+
+    protected function _encrypt_internal($key, $payload, $mode, $iv = null) {
+
+        if ($iv == null) {
+            $iv = "";
+        }
+        return openssl_encrypt($payload, $this->_settings->algorithm.$mode, $key, OPENSSL_RAW_DATA, $iv);
+    }
+
 	/**
 	 * Encrypt or decrypt using AES CTR Little Endian mode
 	 */
@@ -89,7 +105,7 @@ class Cryptor {
 			$iv[0] = chr(ord($iv[0]) + 1);
 		}
 
-		return $payload ^ mcrypt_encrypt($this->_settings->algorithm, $key, $counter, 'ecb');
+        return $payload ^ $this->_encrypt_internal($key, $counter, 'ecb');
 	}
 
 	protected function _generateHmac(\stdClass $components, $hmacKey) {
@@ -146,5 +162,4 @@ class Cryptor {
 		}
 		return mcrypt_create_iv($blockSize, $randomSource);
 	}
-
 }

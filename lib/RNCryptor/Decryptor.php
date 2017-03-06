@@ -33,8 +33,7 @@ class Decryptor extends Cryptor {
 				break;
 
 			case 'cbc':
-				$paddedPlaintext = mcrypt_decrypt($this->_settings->algorithm, $key, $components->ciphertext, 'cbc', $components->headers->iv);
-				$plaintext = $this->_stripPKCS7Padding($paddedPlaintext);
+                $plaintext = $this->_decrypt_internal($key, $components->ciphertext, 'cbc', $components->headers->iv);
 				break;
 		}
 
@@ -117,13 +116,9 @@ class Decryptor extends Cryptor {
 		return substr($plaintext, 0, strlen($plaintext) - $padLength);
 	}
 
-	private function _hmacIsValid($components, $password, $isPasswordBased = true) {
-		$hmacKey = null;
-		if($isPasswordBased)
-			$hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
-		else
-			$hmacKey = $password;
-		return hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
-	}
+	private function _hmacIsValid($components, $password) {
+        $hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
 
+        return hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
+	}
 }
