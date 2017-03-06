@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="tests/bootstrap.php"
+<phpunit bootstrap="vendor/autoload.php"
          colors="true" 
 >
     <testsuites>
@@ -11,7 +11,7 @@
 
     <filter>
         <whitelist>
-            <directory suffix=".php">lib/RNCryptor/</directory>
+            <directory suffix=".php">src/RNCryptor/</directory>
         </whitelist>
     </filter>
 </phpunit>
