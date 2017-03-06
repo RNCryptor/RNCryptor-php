@@ -1,124 +1,101 @@
 <?php
-namespace RNCryptor;
+namespace RNCryptor\RNCryptor;
+
+use stdClass;
 
 /**
  * RNDecryptor for PHP
- * 
+ *
  * Decrypt data interchangeably with Rob Napier's Objective-C implementation
  * of RNCryptor
  */
-class Decryptor extends Cryptor {
+class Decryptor extends Cryptor
+{
+    /**
+     * Decrypt RNCryptor-encrypted data
+     *
+     * @param string $base64EncryptedData Encrypted, Base64-encoded text
+     * @param string $password Password the text was encoded with
+     * @throws Exception If the detected version is unsupported
+     * @return string|false Decrypted string, or false if decryption failed
+     */
+    public function decrypt($encryptedBase64Data, $password)
+    {
+        $components = $this->unpackEncryptedBase64Data($encryptedBase64Data);
 
-	/**
-	 * Decrypt RNCryptor-encrypted data
-	 *
-	 * @param string $base64EncryptedData Encrypted, Base64-encoded text
-	 * @param string $password Password the text was encoded with
-	 * @throws Exception If the detected version is unsupported
-	 * @return string|false Decrypted string, or false if decryption failed
-	 */
-	public function decrypt($encryptedBase64Data, $password) {
+        if (!$this->hmacIsValid($components, $password)) {
+            return false;
+        }
 
-		$components = $this->_unpackEncryptedBase64Data($encryptedBase64Data);
+        $key = $this->makeKey($components->headers->encSalt, $password);
+        if ($this->config->mode == 'ctr') {
+            return $this->aesCtrLittleEndianCrypt($components->ciphertext, $key, $components->headers->iv);
+        }
 
-		if (!$this->_hmacIsValid($components, $password)) {
-			return false;
-		}
+        $iv = (string)$components->headers->iv;
+        $method = $this->config->algorithm . 'cbc';
 
-		$key = $this->_generateKey($components->headers->encSalt, $password);
-		$plaintext = null;
-		switch ($this->_settings->mode) {
-			case 'ctr':
-				$plaintext = $this->_aesCtrLittleEndianCrypt($components->ciphertext, $key, $components->headers->iv);
-				break;
+        return openssl_decrypt($components->ciphertext, $method, $key, OPENSSL_RAW_DATA, (string)$iv);
+    }
 
-			case 'cbc':
-                $plaintext = $this->_decrypt_internal($key, $components->ciphertext, 'cbc', $components->headers->iv);
-				break;
-		}
+    private function unpackEncryptedBase64Data($encryptedBase64Data, $isPasswordBased = true)
+    {
+        $binaryData = base64_decode($encryptedBase64Data);
 
-		return $plaintext;
-	}
+        $components = new stdClass;
+        $components->headers = $this->parseHeaders($binaryData, $isPasswordBased);
 
-	public function decryptWithArbitraryKeys($encryptedBase64Data, $encKey, $hmacKey) {
-		$components = $this->_unpackEncryptedBase64Data($encryptedBase64Data, false);
-		if (!$this->_hmacIsValid($components, $hmacKey, false)) {
-			return false;
-		}
-		$plaintext = null;
-		switch ($this->_settings->mode) {
-			case 'ctr':
-				$plaintext = $this->_aesCtrLittleEndianCrypt($components->ciphertext, $encKey, $components->headers->iv);
-				break;
-			case 'cbc':
-				$paddedPlaintext = mcrypt_decrypt($this->_settings->algorithm, $encKey, $components->ciphertext, 'cbc', $components->headers->iv);
-				$plaintext = $this->_stripPKCS7Padding($paddedPlaintext);
-				break;
-		}
-		return $plaintext;
-	}
+        $components->hmac = substr($binaryData, -$this->config->hmac->length);
 
-	private function _unpackEncryptedBase64Data($encryptedBase64Data, $isPasswordBased = true) {
+        $offset = $components->headers->length;
+        $length = strlen($binaryData) - $offset - strlen($components->hmac);
 
-		$binaryData = base64_decode($encryptedBase64Data);
+        $components->ciphertext = substr($binaryData, $offset, $length);
 
-		$components = new \stdClass();
-		$components->headers = $this->_parseHeaders($binaryData, $isPasswordBased);
+        return $components;
+    }
 
-		$components->hmac = substr($binaryData, - $this->_settings->hmac->length);
+    private function parseHeaders($binData, $isPasswordBased = true)
+    {
+        $offset = 0;
 
-		$headerLength = $components->headers->length;
+        $versionChr = $binData[0];
+        $offset += strlen($versionChr);
 
-		$components->ciphertext = substr($binaryData, $headerLength, strlen($binaryData) - $headerLength - strlen($components->hmac));
+        $this->configure(ord($versionChr));
 
-		return $components;
-	}
+        $optionsChr = $binData[1];
+        $offset += strlen($optionsChr);
 
-	private function _parseHeaders($binData, $isPasswordBased = true) {
+        $encSalt = null;
+        $hmacSalt = null;
+        if ($isPasswordBased) {
+            $encSalt = substr($binData, $offset, $this->config->saltLength);
+            $offset += strlen($encSalt);
 
-		$offset = 0;
+            $hmacSalt = substr($binData, $offset, $this->config->saltLength);
+            $offset += strlen($hmacSalt);
+        }
 
-		$versionChr = $binData[0];
-		$offset += strlen($versionChr);
+        $iv = substr($binData, $offset, $this->config->ivLength);
+        $offset += strlen($iv);
 
-		$this->_configureSettings(ord($versionChr));
+        $headers = (object)[
+            'version' => $versionChr,
+            'options' => $optionsChr,
+            'encSalt' => $encSalt,
+            'hmacSalt' => $hmacSalt,
+            'iv' => $iv,
+            'length' => $offset
+        ];
 
-		$optionsChr = $binData[1];
-		$offset += strlen($optionsChr);
+        return $headers;
+    }
 
-		$encSalt = null;
-		$hmacSalt = null;
-		if($isPasswordBased) {
-			$encSalt = substr($binData, $offset, $this->_settings->saltLength);
-			$offset += strlen($encSalt);
+    private function hmacIsValid($components, $password)
+    {
+        $hmacKey = $this->makeKey($components->headers->hmacSalt, $password);
 
-			$hmacSalt = substr($binData, $offset, $this->_settings->saltLength);
-			$offset += strlen($hmacSalt);
-		}
-
-		$iv = substr($binData, $offset, $this->_settings->ivLength);
-		$offset += strlen($iv);
-
-		$headers = (object)array(
-			'version' => $versionChr,
-			'options' => $optionsChr,
-			'encSalt' => $encSalt,
-			'hmacSalt' => $hmacSalt,
-			'iv' => $iv,
-			'length' => $offset
-		);
-
-		return $headers;
-	}
-
-	private function _stripPKCS7Padding($plaintext) {
-		$padLength = ord($plaintext[strlen($plaintext)-1]);
-		return substr($plaintext, 0, strlen($plaintext) - $padLength);
-	}
-
-	private function _hmacIsValid($components, $password) {
-        $hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
-
-        return hash_equals($components->hmac, $this->_generateHmac($components, $hmacKey));
-	}
+        return hash_equals($components->hmac, $this->makeHmac($components, $hmacKey));
+    }
 }

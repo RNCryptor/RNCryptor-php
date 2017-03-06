@@ -1,165 +1,133 @@
 <?php
-namespace RNCryptor;
+namespace RNCryptor\RNCryptor;
 
-class Cryptor {
+use stdClass;
 
-	const DEFAULT_SCHEMA_VERSION = 3;
+class Cryptor
+{
+    const DEFAULT_SCHEMA_VERSION = 3;
 
-	protected $_settings;
+    protected $config;
 
-	public function __construct() {
-		if (!extension_loaded('openssl')) {
-			throw new \Exception('RNCryptor requires the openssl extension.');
-		}
-	}
+    public function generateKey($salt, $password, $version = self::DEFAULT_SCHEMA_VERSION)
+    {
+        $this->configure($version);
 
-	protected function _configureSettings($version) {
-
-		$settings = new \stdClass();
-
-		$settings->algorithm = 'aes-256-';
-		$settings->saltLength = 8;
-		$settings->ivLength = 16;
-
-		$settings->pbkdf2 = new \stdClass();
-		$settings->pbkdf2->prf = 'sha1';
-		$settings->pbkdf2->iterations = 10000;
-		$settings->pbkdf2->keyLength = 32;
-		
-		$settings->hmac = new \stdClass();
-		$settings->hmac->length = 32;
-
-		switch ($version) {
-			case 0:
-				$settings->mode = 'ctr';
-				$settings->options = 0;
-				$settings->hmac->includesHeader = false;
-				$settings->hmac->algorithm = 'sha1';
-				$settings->hmac->includesPadding = true;
-				$settings->truncatesMultibytePasswords = true;
-				break;
-
-			case 1:
-				$settings->mode = 'cbc';
-				$settings->options = 1;
-				$settings->hmac->includesHeader = false;
-				$settings->hmac->algorithm = 'sha256';
-				$settings->hmac->includesPadding = false;
-				$settings->truncatesMultibytePasswords = true;
-				break;
-
-			case 2:
-				$settings->mode = 'cbc';
-				$settings->options = 1;
-				$settings->hmac->includesHeader = true;
-				$settings->hmac->algorithm = 'sha256';
-				$settings->hmac->includesPadding = false;
-				$settings->truncatesMultibytePasswords = true;
-				break;
-
-			case 3:
-				$settings->mode = 'cbc';
-				$settings->options = 1;
-				$settings->hmac->includesHeader = true;
-				$settings->hmac->algorithm = 'sha256';
-				$settings->hmac->includesPadding = false;
-				$settings->truncatesMultibytePasswords = false;
-				break;
-
-			default:
-				throw new \Exception('Unsupported schema version ' . $version);
-		}
-
-		$this->_settings = $settings;
-	}
-
-    protected function _decrypt_internal($key, $payload, $mode, $iv = null) {
-
-        if ($iv == null) {
-            $iv = "";
-        }
-        return openssl_decrypt($payload, $this->_settings->algorithm.$mode, $key, OPENSSL_RAW_DATA, $iv);
+        return $this->makeKey($salt, $password);
     }
 
-    protected function _encrypt_internal($key, $payload, $mode, $iv = null) {
+    protected function aesCtrLittleEndianCrypt($payload, $key, $iv)
+    {
+        $numOfBlocks = ceil(strlen($payload) / strlen($iv));
+        $counter = '';
+        for ($i = 0; $i < $numOfBlocks; ++$i) {
+            $counter .= $iv;
 
-        if ($iv == null) {
-            $iv = "";
+            // Yes, the next line only ever increments the first character
+            // of the counter string, ignoring overflow conditions.  This
+            // matches CommonCrypto's behavior!
+            $iv[0] = chr(ord($iv[0]) + 1);
         }
-        return openssl_encrypt($payload, $this->_settings->algorithm.$mode, $key, OPENSSL_RAW_DATA, $iv);
+
+        return $payload ^ $this->encryptInternal($key, $counter, 'ecb');
     }
 
-	/**
-	 * Encrypt or decrypt using AES CTR Little Endian mode
-	 */
-	protected function _aesCtrLittleEndianCrypt($payload, $key, $iv) {
+    protected function encryptInternal($key, $payload, $mode, $iv = null)
+    {
+        return openssl_encrypt($payload, $this->config->algorithm . $mode, $key, OPENSSL_RAW_DATA, (string)$iv);
+    }
 
-		$numOfBlocks = ceil(strlen($payload) / strlen($iv));
-		$counter = '';
-		for ($i = 0; $i < $numOfBlocks; ++$i) {
-			$counter .= $iv;
+    protected function makeHmac(stdClass $components, $hmacKey)
+    {
+        $hmacMessage = '';
+        if ($this->config->hmac->includesHeader) {
+            $hmacMessage .= ''
+                . $components->headers->version
+                . $components->headers->options
+                . (isset($components->headers->encSalt) ? $components->headers->encSalt : '')
+                . (isset($components->headers->hmacSalt) ? $components->headers->hmacSalt : '')
+                . $components->headers->iv;
+        }
 
-			// Yes, the next line only ever increments the first character
-			// of the counter string, ignoring overflow conditions.  This
-			// matches CommonCrypto's behavior!
-			$iv[0] = chr(ord($iv[0]) + 1);
-		}
+        $hmacMessage .= $components->ciphertext;
 
-        return $payload ^ $this->_encrypt_internal($key, $counter, 'ecb');
-	}
+        $hmac = hash_hmac($this->config->hmac->algorithm, $hmacMessage, $hmacKey, true);
 
-	protected function _generateHmac(\stdClass $components, $hmacKey) {
-	
-		$hmacMessage = '';
-		if ($this->_settings->hmac->includesHeader) {
-			$hmacMessage .= $components->headers->version
-							. $components->headers->options
-							. (isset($components->headers->encSalt) ? $components->headers->encSalt : '')
-							. (isset($components->headers->hmacSalt) ? $components->headers->hmacSalt : '')
-							. $components->headers->iv;
-		}
+        if ($this->config->hmac->includesPadding) {
+            $hmac = str_pad($hmac, $this->config->hmac->length, chr(0));
+        }
+    
+        return $hmac;
+    }
 
-		$hmacMessage .= $components->ciphertext;
+    protected function makeKey($salt, $password)
+    {
+        if ($this->config->truncatesMultibytePasswords) {
+            $utf8Length = mb_strlen($password, 'utf-8');
+            $password = substr($password, 0, $utf8Length);
+        }
 
-		$hmac = hash_hmac($this->_settings->hmac->algorithm, $hmacMessage, $hmacKey, true);
+        $algo = $this->config->pbkdf2->prf;
+        $iterations = $this->config->pbkdf2->iterations;
+        $length = $this->config->pbkdf2->keyLength;
 
-		if ($this->_settings->hmac->includesPadding) {
-			$hmac = str_pad($hmac, $this->_settings->hmac->length, chr(0));
-		}
-	
-		return $hmac;
-	}
+        return hash_pbkdf2($algo, $password, $salt, $iterations, $length, true);
+    }
 
-	/**
-	 * Key derivation -- This method is intended for testing.  It merely
-	 * exposes the underlying key-derivation functionality.
-	 */
-	public function generateKey($salt, $password, $version = self::DEFAULT_SCHEMA_VERSION) {
-		$this->_configureSettings($version);
-		return $this->_generateKey($salt, $password);
-	}
+    protected function configure($version)
+    {
+        $config = new stdClass;
 
-	public function generateSalt($version = self::DEFAULT_SCHEMA_VERSION) {
-		$this->_configureSettings($version);
-		return $this->_generateIv($this->_settings->saltLength);
-	}
+        $config->algorithm = 'aes-256-';
+        $config->saltLength = 8;
+        $config->ivLength = 16;
 
-	protected function _generateKey($salt, $password) {
+        $config->pbkdf2 = new stdClass;
+        $config->pbkdf2->prf = 'sha1';
+        $config->pbkdf2->iterations = 10000;
+        $config->pbkdf2->keyLength = 32;
 
-		if ($this->_settings->truncatesMultibytePasswords) {
-			$utf8Length = mb_strlen($password, 'utf-8');
-			$password = substr($password, 0, $utf8Length);
-		}
+        $config->hmac = new stdClass();
+        $config->hmac->length = 32;
 
-		return hash_pbkdf2($this->_settings->pbkdf2->prf, $password, $salt, $this->_settings->pbkdf2->iterations, $this->_settings->pbkdf2->keyLength, true);
-	}
+        if (!$version) {
+            $this->configureVersionZero($config);
+        } elseif ($version <= 3) {
+            $config->mode = 'cbc';
+            $config->options = 1;
+            $config->hmac->algorithm = 'sha256';
+            $config->hmac->includesPadding = false;
 
-	private function _generateIv($blockSize) {
-		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-			$randomSource = MCRYPT_RAND;
-		} else {
-			$randomSource = MCRYPT_DEV_URANDOM;
-		}
-		return mcrypt_create_iv($blockSize, $randomSource);
-	}
+            switch ($version) {
+                case 1:
+                    $config->hmac->includesHeader = false;
+                    $config->truncatesMultibytePasswords = true;
+                    break;
+
+                case 2:
+                    $config->hmac->includesHeader = true;
+                    $config->truncatesMultibytePasswords = true;
+                    break;
+
+                case 3:
+                    $config->hmac->includesHeader = true;
+                    $config->truncatesMultibytePasswords = false;
+                    break;
+            }
+        } else {
+            throw new \RuntimeException('Unsupported schema version ' . $version);
+        }
+
+        $this->config = $config;
+    }
+
+    private function configureVersionZero(stdClass $config)
+    {
+        $config->mode = 'ctr';
+        $config->options = 0;
+        $config->hmac->includesHeader = false;
+        $config->hmac->algorithm = 'sha1';
+        $config->hmac->includesPadding = true;
+        $config->truncatesMultibytePasswords = true;
+    }
 }

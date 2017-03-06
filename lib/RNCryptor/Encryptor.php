@@ -1,110 +1,114 @@
 <?php
-namespace RNCryptor;
+namespace RNCryptor\RNCryptor;
+
+use stdClass;
 
 /**
  * RNEncryptor for PHP
- * 
+ *
  * Encrypt data interchangeably with Rob Napier's Objective-C implementation
  * of RNCryptor
  */
-class Encryptor extends Cryptor {
+class Encryptor extends Cryptor
+{
+    /**
+     * Encrypt plaintext using RNCryptor's algorithm
+     *
+     * @param string $plaintext Text to be encrypted
+     * @param string $password Password to use
+     * @param int $version (Optional) RNCryptor schema version to use.
+     * @throws \Exception If the provided version (if any) is unsupported
+     * @return string Encrypted, Base64-encoded string
+     */
+    public function encrypt($plaintext, $password, $version = Cryptor::DEFAULT_SCHEMA_VERSION)
+    {
+        $this->configure($version);
 
-	/**
-	 * Encrypt plaintext using RNCryptor's algorithm
-	 * 
-	 * @param string $plaintext Text to be encrypted
-	 * @param string $password Password to use
-	 * @param int $version (Optional) RNCryptor schema version to use.
-	 * @throws \Exception If the provided version (if any) is unsupported
-	 * @return string Encrypted, Base64-encoded string
-	 */
-	public function encrypt($plaintext, $password, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
+        $components = $this->makeComponents($version);
+        $components->headers->encSalt = $this->makeSalt();
+        $components->headers->hmacSalt = $this->makeSalt();
+        $components->headers->iv = $this->makeIv($this->config->ivLength);
 
-		$this->_configureSettings($version);
+        $encKey = $this->makeKey($components->headers->encSalt, $password);
+        $hmacKey = $this->makeKey($components->headers->hmacSalt, $password);
 
-		$components = $this->_generateInitializedComponents($version);
-		$components->headers->encSalt = $this->_generateSalt();
-		$components->headers->hmacSalt = $this->_generateSalt();
-		$components->headers->iv = $this->_generateIv($this->_settings->ivLength);
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+    }
 
-		$encKey = $this->_generateKey($components->headers->encSalt, $password);
-		$hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
+    public function encryptWithArbitrarySalts(
+        $plaintext,
+        $password,
+        $encSalt,
+        $hmacSalt,
+        $iv,
+        $version = Cryptor::DEFAULT_SCHEMA_VERSION
+    ) {
+        $this->configure($version);
 
-		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
-	}
+        $components = $this->makeComponents($version);
+        $components->headers->encSalt = $encSalt;
+        $components->headers->hmacSalt = $hmacSalt;
+        $components->headers->iv = $iv;
 
-	public function encryptWithArbitrarySalts($plaintext, $password, $encSalt, $hmacSalt, $iv, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
-	
-		$this->_configureSettings($version);
+        $encKey = $this->makeKey($components->headers->encSalt, $password);
+        $hmacKey = $this->makeKey($components->headers->hmacSalt, $password);
 
-		$components = $this->_generateInitializedComponents($version);
-		$components->headers->encSalt = $encSalt;
-		$components->headers->hmacSalt = $hmacSalt;
-		$components->headers->iv = $iv;
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+    }
 
-		$encKey = $this->_generateKey($components->headers->encSalt, $password);
-		$hmacKey = $this->_generateKey($components->headers->hmacSalt, $password);
+    public function encryptWithArbitraryKeys(
+        $plaintext,
+        $encKey,
+        $hmacKey,
+        $iv,
+        $version = Cryptor::DEFAULT_SCHEMA_VERSION
+    ) {
+        $this->configure($version);
 
-		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
-	}
+        $this->config->options = 0;
 
-	public function encryptWithArbitraryKeys($plaintext, $encKey, $hmacKey, $iv, $version = Cryptor::DEFAULT_SCHEMA_VERSION) {
+        $components = $this->makeComponents($version);
+        $components->headers->iv = $iv;
 
-		$this->_configureSettings($version);
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+    }
 
-		$this->_settings->options = 0;
+    private function makeComponents($version)
+    {
+        $components = new stdClass;
+        $components->headers = new stdClass;
+        $components->headers->version = chr($version);
+        $components->headers->options = chr($this->config->options);
 
-		$components = $this->_generateInitializedComponents($version);
-		$components->headers->iv = $iv;
+        return $components;
+    }
 
-		return $this->_encrypt($plaintext, $components, $encKey, $hmacKey);
-	}
+    private function encryptFromComponents($plaintext, stdClass $components, $encKey, $hmacKey)
+    {
+        $iv = $components->headers->iv;
+        if ($this->config->mode == 'ctr') {
+            $components->ciphertext = $this->aesCtrLittleEndianCrypt($plaintext, $encKey, $iv);
+        } else {
+            $components->ciphertext = $this->encryptInternal($encKey, $plaintext, 'cbc', $iv);
+        }
 
-	private function _generateInitializedComponents($version) {
+        return base64_encode(''
+            . $components->headers->version
+            . $components->headers->options
+            . ($components->headers->encSalt ?? '')
+            . ($components->headers->hmacSalt ?? '')
+            . $components->headers->iv
+            . $components->ciphertext
+            . $this->makeHmac($components, $hmacKey));
+    }
 
-		$components = new \stdClass();
-		$components->headers = new \stdClass();
-		$components->headers->version = chr($version);
-		$components->headers->options = chr($this->_settings->options);
+    private function makeSalt()
+    {
+        return $this->makeIv($this->config->saltLength);
+    }
 
-		return $components;
-	}
-
-	private function _encrypt($plaintext, \stdClass $components, $encKey, $hmacKey) {
-	
-		switch ($this->_settings->mode) {
-			case 'ctr':
-				$components->ciphertext = $this->_aesCtrLittleEndianCrypt($plaintext, $encKey, $components->headers->iv);
-				break;
-	
-			case 'cbc':
-                $components->ciphertext = $this->_encrypt_internal($encKey, $plaintext, 'cbc', $components->headers->iv);
-				break;
-		}
-
-		$binaryData = ''
-				. $components->headers->version
-				. $components->headers->options
-				. (isset($components->headers->encSalt) ? $components->headers->encSalt : '')
-				. (isset($components->headers->hmacSalt) ? $components->headers->hmacSalt : '')
-				. $components->headers->iv
-				. $components->ciphertext;
-	
-		$hmac = $this->_generateHmac($components, $hmacKey);
-	
-		return base64_encode($binaryData . $hmac);
-	}
-
-	private function _addPKCS7Padding($plaintext, $blockSize) {
-		$padSize = $blockSize - (strlen($plaintext) % $blockSize);
-		return $plaintext . str_repeat(chr($padSize), $padSize);
-	}
-
-	private function _generateSalt() {
-		return $this->_generateIv($this->_settings->saltLength);
-	}
-
-	private function _generateIv($blockSize) {
+    private function makeIv($blockSize)
+    {
         return openssl_random_pseudo_bytes($blockSize);
-	}
+    }
 }

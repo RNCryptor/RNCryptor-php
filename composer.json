@@ -28,8 +28,17 @@
 		"phpunit/phpunit": "~6.0"
     },
     "autoload": {
-        "psr-0": {
-            "RNCryptor": "lib/"
+        "psr-4": {
+            "RNCryptor\\": "lib/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
     }
 }
