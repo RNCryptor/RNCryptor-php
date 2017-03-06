@@ -20,15 +20,17 @@
         }
     ],
     "require": {
-        "php": ">=5.5.0",
+        "php": ">=5.5 <7.1",
         "ext-mcrypt": "*",
 		"sarciszewski/php-future": "0.4.*"
     },
     "require-dev": {
 		"rncryptor/spec": "3.0.1",
-		"phpunit/phpunit": "~4.8"
+		"phpunit/phpunit": "~5.7"
     },
     "autoload": {
-        "psr-0": {"RNCryptor": "lib/"}
+        "psr-0": {
+            "RNCryptor": "lib/"
+        }
     }
 }
