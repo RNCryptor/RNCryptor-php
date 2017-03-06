@@ -20,12 +20,13 @@
         }
     ],
     "require": {
-        "php": ">=7.0 <7.2",
-        "ext-openssl": "*"
-    },
+		"php": ">=7.0 <7.2",
+		"ext-openssl": "*"
+	},
     "require-dev": {
 		"rncryptor/spec": "~4.0",
-		"phpunit/phpunit": "~6.0"
+		"phpunit/phpunit": "~6.0",
+        "squizlabs/php_codesniffer": "^2.8"
     },
     "autoload": {
         "psr-4": {
