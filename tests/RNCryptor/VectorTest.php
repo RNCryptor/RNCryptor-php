@@ -10,69 +10,195 @@ class VectorBase extends \PHPUnit_Framework_TestCase {
 	const PARALLEL_VECTOR_DIR = '/../../../spec/vectors/CURRENT';
 	const SUBPACKAGE_VECTOR_DIR = '/../../vendor/rncryptor/spec/vectors/CURRENT';
 
-	public function testKdfVectors() {
+	public function testKdfVectorAllFieldsEmptyOrZero() {
 
-		$vectors = $this->_getVectors('kdf');
-		foreach ($vectors as $vector) {
-	
-			$cryptor = new Cryptor();
-			$key = $cryptor->generateKey(
-				$this->_prettyHexToBin($vector['salt_hex']),
-				$vector['password'],
-				$vector['version']
-			);
-			
-			$this->assertEquals(
-				$this->_prettyHexToBin($vector['key_hex']),
-				$key
-			);
-		}
+		$vector = $this->_getVectors('kdf')[0];
+
+        $cryptor = new Cryptor();
+        $key = $cryptor->generateKey(
+            $this->_prettyHexToBin($vector['salt_hex']),
+            $vector['password'],
+            $vector['version']
+        );
+
+        $this->assertEquals($this->_prettyHexToBin($vector['key_hex']), $key);
 	}
 
-	public function testKeyVectors() {
+    public function testKdfVectorOneByte() {
 
-		$vectors = $this->_getVectors('key');
-		foreach ($vectors as $vector) {
-	
-			$encryptor = new Encryptor();
-			$encryptedB64 = $encryptor->encryptWithArbitraryKeys(
-				$this->_prettyHexToBin($vector['plaintext_hex']),
-				$this->_prettyHexToBin($vector['enc_key_hex']),
-				$this->_prettyHexToBin($vector['hmac_key_hex']),
-				$this->_prettyHexToBin($vector['iv_hex']),
-				$vector['version']
-			);
-	
-			$this->assertEquals(
-				$vector['ciphertext_hex'],
-				$this->_binToPrettyHex(base64_decode($encryptedB64))
-			);
-		}
+        $vector = $this->_getVectors('kdf')[1];
+
+        $cryptor = new Cryptor();
+        $key = $cryptor->generateKey(
+            $this->_prettyHexToBin($vector['salt_hex']),
+            $vector['password'],
+            $vector['version']
+        );
+
+        $this->assertEquals($this->_prettyHexToBin($vector['key_hex']), $key);
+    }
+
+    public function testKdfVectorExactlyOneBlock() {
+
+        $vector = $this->_getVectors('kdf')[2];
+
+        $cryptor = new Cryptor();
+        $key = $cryptor->generateKey(
+            $this->_prettyHexToBin($vector['salt_hex']),
+            $vector['password'],
+            $vector['version']
+        );
+
+        $this->assertEquals($this->_prettyHexToBin($vector['key_hex']), $key);
+    }
+
+    public function testKdfVectorMoreThanOneBlock() {
+
+        $vector = $this->_getVectors('kdf')[3];
+
+        $cryptor = new Cryptor();
+        $key = $cryptor->generateKey(
+            $this->_prettyHexToBin($vector['salt_hex']),
+            $vector['password'],
+            $vector['version']
+        );
+
+        $this->assertEquals($this->_prettyHexToBin($vector['key_hex']), $key);
+    }
+
+    public function testKeyVectorAllFieldsEmptyOrZero() {
+
+		$vector = $this->_getVectors('key')[0];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitraryKeys(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $this->_prettyHexToBin($vector['enc_key_hex']),
+            $this->_prettyHexToBin($vector['hmac_key_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
 	}
 
-	public function testPasswordVectors() {
+    public function testKeyVectorOneByte() {
 
-		$vectors = $this->_getVectors('password');
-		foreach ($vectors as $vector) {
+        $vector = $this->_getVectors('key')[1];
 
-			$encryptor = new Encryptor();
-			$encryptedB64 = $encryptor->encryptWithArbitrarySalts(
-				$this->_prettyHexToBin($vector['plaintext_hex']),
-				$vector['password'],
-				$this->_prettyHexToBin($vector['enc_salt_hex']),
-				$this->_prettyHexToBin($vector['hmac_salt_hex']),
-				$this->_prettyHexToBin($vector['iv_hex']),
-				$vector['version']
-			);
-	
-			$this->assertEquals(
-				$vector['ciphertext_hex'],
-				$this->_binToPrettyHex(base64_decode($encryptedB64))
-			);
-		}
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitraryKeys(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $this->_prettyHexToBin($vector['enc_key_hex']),
+            $this->_prettyHexToBin($vector['hmac_key_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    public function testKeyVectorExactlyOneBlock() {
+
+        $vector = $this->_getVectors('key')[2];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitraryKeys(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $this->_prettyHexToBin($vector['enc_key_hex']),
+            $this->_prettyHexToBin($vector['hmac_key_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    public function testKeyVectorMoreThanOneBlock() {
+
+        $vector = $this->_getVectors('key')[3];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitraryKeys(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $this->_prettyHexToBin($vector['enc_key_hex']),
+            $this->_prettyHexToBin($vector['hmac_key_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    public function testPasswordVectorAllFieldsEmptyOrZero() {
+
+		$vector = $this->_getVectors('password')[0];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitrarySalts(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $vector['password'],
+            $this->_prettyHexToBin($vector['enc_salt_hex']),
+            $this->_prettyHexToBin($vector['hmac_salt_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
 	}
 
-	private function _prettyHexToBin($data) {
+    public function testPasswordVectorOneByte() {
+
+        $vector = $this->_getVectors('password')[1];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitrarySalts(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $vector['password'],
+            $this->_prettyHexToBin($vector['enc_salt_hex']),
+            $this->_prettyHexToBin($vector['hmac_salt_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    public function testPasswordVectorExactlyOneBlock() {
+
+        $vector = $this->_getVectors('password')[2];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitrarySalts(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $vector['password'],
+            $this->_prettyHexToBin($vector['enc_salt_hex']),
+            $this->_prettyHexToBin($vector['hmac_salt_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    public function testPasswordVectorMoreThanOneBlock() {
+
+        $vector = $this->_getVectors('password')[3];
+
+        $encryptor = new Encryptor();
+        $encryptedB64 = $encryptor->encryptWithArbitrarySalts(
+            $this->_prettyHexToBin($vector['plaintext_hex']),
+            $vector['password'],
+            $this->_prettyHexToBin($vector['enc_salt_hex']),
+            $this->_prettyHexToBin($vector['hmac_salt_hex']),
+            $this->_prettyHexToBin($vector['iv_hex']),
+            $vector['version']
+        );
+
+        $this->assertEquals($vector['ciphertext_hex'], $this->_binToPrettyHex(base64_decode($encryptedB64)));
+    }
+
+    private function _prettyHexToBin($data) {
 		return hex2bin(preg_replace("/[^a-z0-9]/i", '', $data));
 	}
 
