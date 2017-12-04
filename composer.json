@@ -1,45 +1,45 @@
 {
 	"name": "rncryptor/rncryptor",
-    "type": "library",
-    "description": "PHP implementation of RNCryptor",
-    "keywords": ["encryption", "crypto", "rncryptor"],
-    "homepage": "http://rncryptor.github.io",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Rob Napier",
-            "email": "robnapier@gmail.com"
-        },
-        {
-            "name": "Guysung Kim",
-            "email": "guysung.kim@gmail.com"
-        },
-        {
-            "name": "Curtis Farnham",
-            "email": "curtisfarnham@gmail.com"
-        }
-    ],
-    "require": {
-		"php": ">=7.0 <7.2",
+	"type": "library",
+	"description": "PHP implementation of RNCryptor",
+	"keywords": ["encryption", "crypto", "rncryptor"],
+	"homepage": "http://rncryptor.github.io",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Rob Napier",
+			"email": "robnapier@gmail.com"
+		},
+		{
+			"name": "Guysung Kim",
+			"email": "guysung.kim@gmail.com"
+		},
+		{
+			"name": "Curtis Farnham",
+			"email": "curtisfarnham@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=7.0 <7.3",
 		"ext-openssl": "*"
 	},
-    "require-dev": {
+	"require-dev": {
 		"rncryptor/spec": "~4.0",
 		"phpunit/phpunit": "~6.0",
-        "squizlabs/php_codesniffer": "^2.8"
-    },
-    "autoload": {
-        "psr-4": {
-            "RNCryptor\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
-    },
-    "config": {
-        "preferred-install": "dist",
-        "sort-packages": true
-    }
+		"squizlabs/php_codesniffer": "^2.8"
+	},
+	"autoload": {
+		"psr-4": {
+			"RNCryptor\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	},
+	"config": {
+		"preferred-install": "dist",
+		"sort-packages": true
+	}
 }
