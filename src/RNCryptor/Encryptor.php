@@ -20,7 +20,7 @@ class Encryptor extends Cryptor
      * @throws \Exception If the provided version (if any) is unsupported
      * @return string Encrypted, Base64-encoded string
      */
-    public function encrypt($plaintext, $password, $version = Cryptor::DEFAULT_SCHEMA_VERSION)
+    public function encrypt($plaintext, $password, $version = Cryptor::DEFAULT_SCHEMA_VERSION, $base64Encode = true)
     {
         $this->configure($version);
 
@@ -32,7 +32,7 @@ class Encryptor extends Cryptor
         $encKey = $this->makeKey($components->headers->encSalt, $password);
         $hmacKey = $this->makeKey($components->headers->hmacSalt, $password);
 
-        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey, $base64Encode);
     }
 
     public function encryptWithArbitrarySalts(
@@ -41,7 +41,8 @@ class Encryptor extends Cryptor
         $encSalt,
         $hmacSalt,
         $iv,
-        $version = Cryptor::DEFAULT_SCHEMA_VERSION
+        $version = Cryptor::DEFAULT_SCHEMA_VERSION,
+        $base64Encode = true
     ) {
         $this->configure($version);
 
@@ -53,7 +54,7 @@ class Encryptor extends Cryptor
         $encKey = $this->makeKey($components->headers->encSalt, $password);
         $hmacKey = $this->makeKey($components->headers->hmacSalt, $password);
 
-        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey, $base64Encode);
     }
 
     public function encryptWithArbitraryKeys(
@@ -61,7 +62,8 @@ class Encryptor extends Cryptor
         $encKey,
         $hmacKey,
         $iv,
-        $version = Cryptor::DEFAULT_SCHEMA_VERSION
+        $version = Cryptor::DEFAULT_SCHEMA_VERSION,
+        $base64Encode = true
     ) {
         $this->configure($version);
 
@@ -70,7 +72,7 @@ class Encryptor extends Cryptor
         $components = $this->makeComponents($version);
         $components->headers->iv = $iv;
 
-        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey);
+        return $this->encryptFromComponents($plaintext, $components, $encKey, $hmacKey, $base64Encode);
     }
 
     private function makeComponents($version)
@@ -92,8 +94,7 @@ class Encryptor extends Cryptor
             $components->ciphertext = $this->encryptInternal($encKey, $plaintext, 'cbc', $iv);
         }
 
-        $data = ''
-            . $components->headers->version
+        $data = $components->headers->version
             . $components->headers->options
             . ($components->headers->encSalt ?? '')
             . ($components->headers->hmacSalt ?? '')
@@ -101,7 +102,7 @@ class Encryptor extends Cryptor
             . $components->ciphertext
             . $this->makeHmac($components, $hmacKey);
 
-        return $base64encode ? base64_encode($data) : $data;
+        return ($base64encode ? base64_encode($data) : $data);
     }
 
     private function makeSalt()
