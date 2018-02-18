@@ -83,7 +83,7 @@ class Encryptor extends Cryptor
         return $components;
     }
 
-    private function encryptFromComponents($plaintext, stdClass $components, $encKey, $hmacKey)
+    private function encryptFromComponents($plaintext, stdClass $components, $encKey, $hmacKey, $base64encode = true)
     {
         $iv = $components->headers->iv;
         if ($this->config->mode == 'ctr') {
@@ -92,14 +92,16 @@ class Encryptor extends Cryptor
             $components->ciphertext = $this->encryptInternal($encKey, $plaintext, 'cbc', $iv);
         }
 
-        return base64_encode(''
+        $data = ''
             . $components->headers->version
             . $components->headers->options
             . ($components->headers->encSalt ?? '')
             . ($components->headers->hmacSalt ?? '')
             . $components->headers->iv
             . $components->ciphertext
-            . $this->makeHmac($components, $hmacKey));
+            . $this->makeHmac($components, $hmacKey);
+
+        return $base64encode ? base64_encode($data) : $data;
     }
 
     private function makeSalt()
