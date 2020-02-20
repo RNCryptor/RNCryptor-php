@@ -61,4 +61,12 @@ class EncryptorTest extends TestCase
         $actualVersion = ord(substr(base64_decode($encrypted), 0, 1));
         $this->assertEquals(2, $actualVersion);
     }
+
+    public function testCanSetCustomIterations()
+    {
+        $encryptor = new Encryptor;
+        $encryptor->setIterations(42);
+
+        $this->assertEquals(42, $encryptor->getIterations());
+    }
 }

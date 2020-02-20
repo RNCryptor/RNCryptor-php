@@ -11,9 +11,37 @@ class Cryptor
 
     protected $iterations = 10000;
 
-	public function setIterations($num) {
-		$this->iterations = $num;
-	}
+    /**
+     * Set the number of PBKDF2 iterations to use
+     *
+     * NOTE: The RNCryptor spec explicitly specifies 10,000 iterations and does not allow this to be customized.
+     * However, some integrators desire to customize it anyway in order to reduce CPU consumption. This is
+     * supported by some implementations in other languages (e.g. Java, Swift). So we're allowing it here too.
+     *
+     * WARNING: Reducing the number of iterations weakens security. Only do this if you are sure you need it, and
+     * are prepared to deal with the potential consequences.
+     *
+     * IMPORTANT: The same number of iterations MUST be used for encrypting a given payload as are used for decrypting
+     * it, and the encrypted payload doesn't inform the decryptor about how many iterations were used.  Therefore,
+     * any custom number of iterations is out-of-band and will have to be known ahead of time by whatever implementation
+     * is decrypting the same payload.
+     *
+     * @param int $iterations Number of iterations
+     */
+    public function setIterations($iterations) : self
+    {
+        $this->iterations = $iterations;
+
+        return $this;
+    }
+
+    /**
+     * @return int Number of iterations which this instance is configured to use
+     */
+    public function getIterations()
+    {
+        return $this->iterations;
+    }
 
     public function generateKey($salt, $password, $version = self::DEFAULT_SCHEMA_VERSION)
     {

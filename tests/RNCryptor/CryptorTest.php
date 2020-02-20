@@ -148,6 +148,32 @@ class CryptorTest extends TestCase
         $decryptor->decrypt($encrypted, self::SAMPLE_PASSWORD);
     }
 
+    public function testUsesCustomIterations()
+    {
+        $encrypted = (new Encryptor)
+            ->setIterations(42)
+            ->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD);
+
+        $decrypted = (new Decryptor)
+            ->setIterations(42)
+            ->decrypt($encrypted, self::SAMPLE_PASSWORD);
+
+        $this->assertEquals(self::SAMPLE_PLAINTEXT, $decrypted);
+    }
+
+    public function testFailsRoundtripIfIterationsDiffer()
+    {
+        $encrypted = (new Encryptor)
+            ->setIterations(42)
+            ->encrypt(self::SAMPLE_PLAINTEXT, self::SAMPLE_PASSWORD);
+
+        $decrypted = (new Decryptor)
+            ->setIterations(43)
+            ->decrypt($encrypted, self::SAMPLE_PASSWORD);
+
+        $this->assertFalse($decrypted);
+    }
+
     private function generateEncryptedStringWithUnsupportedSchemaNumber($fakeSchemaNumber)
     {
         $encryptor = new Encryptor;

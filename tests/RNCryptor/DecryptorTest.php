@@ -140,4 +140,12 @@ class DecryptorTest extends TestCase
         $decrypted = $decryptor->decrypt(self::IOS_ENCRYPTED_V2_NON_BLOCK_INTERVAL, 'bad-password');
         $this->assertEquals(false, $decrypted);
     }
+
+    public function testCanSetCustomIterations()
+    {
+        $decryptor = new Decryptor;
+        $decryptor->setIterations(42);
+
+        $this->assertEquals(42, $decryptor->getIterations());
+    }
 }
