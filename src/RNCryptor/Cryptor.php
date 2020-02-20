@@ -9,6 +9,12 @@ class Cryptor
 
     protected $config;
 
+    protected $iterations = 10000;
+
+	public function setIterations($num) {
+		$this->iterations = $num;
+	}
+
     public function generateKey($salt, $password, $version = self::DEFAULT_SCHEMA_VERSION)
     {
         $this->configure($version);
@@ -84,7 +90,7 @@ class Cryptor
 
         $config->pbkdf2 = new stdClass;
         $config->pbkdf2->prf = 'sha1';
-        $config->pbkdf2->iterations = 10000;
+        $config->pbkdf2->iterations = $this->iterations;
         $config->pbkdf2->keyLength = 32;
 
         $config->hmac = new stdClass();
