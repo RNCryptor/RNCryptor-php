@@ -8,8 +8,6 @@ $base64Encrypted = "AgGXutvFqW9RqQuokYLjehbfM7F+8OO/2sD8g3auA+oNCQFoarRmc59qcKJv
     . 'EN7Cv";
 
 $cryptor = new \RNCryptor\RNCryptor\Decryptor;
-
-//$cryptor->setIterations(100);
 $plaintext = $cryptor->decrypt($base64Encrypted, $password);
 
 echo "Base64 Encrypted:\n$base64Encrypted\n\n";

@@ -6,8 +6,6 @@ $password = "myPassword";
 $plaintext = "Here is my test vector. It's not too long, but more than a block and needs padding.";
 
 $cryptor = new \RNCryptor\RNCryptor\Encryptor;
-
-//$cryptor->setIterations(100);
 $base64Encrypted = $cryptor->encrypt($plaintext, $password);
 
 echo "Plaintext:\n$plaintext\n\n";
